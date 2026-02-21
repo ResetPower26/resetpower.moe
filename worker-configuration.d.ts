@@ -6,6 +6,9 @@ declare namespace Cloudflare {
 		mainModule: typeof import("./worker/index");
 	}
 	interface Env {
+		ASSETS: Fetcher;
+		DB: D1Database;
+		JWT_SECRET: string;
 	}
 }
 interface Env extends Cloudflare.Env {}

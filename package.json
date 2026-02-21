@@ -7,20 +7,30 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "biome check --write",
+    "check": "npm run lint && tsc -b",
     "preview": "npm run build && vite preview",
     "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@tailwindcss/typography": "^0.5.19",
     "clsx": "^2.1.1",
+    "katex": "^0.16.28",
     "lucide-react": "^0.575.0",
+    "nanoid": "^5.1.6",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.13.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.3",
     "@cloudflare/vite-plugin": "^1.25.2",
+    "@cloudflare/workers-types": "^4.20260227.0",
     "@tailwindcss/vite": "^4.2.0",
     "@types/node": "^24.10.13",
     "@types/react": "^19.2.7",

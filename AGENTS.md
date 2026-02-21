@@ -32,6 +32,21 @@ This document serves as the **Supreme Law** for all code modifications. Agents m
 
 ## 3. Code Readability & Naming Contracts
 
+### React Component Definition
+- **Props Typing:** Use inline typing for props within the function signature. Avoid defining separate `Props` interfaces unless the structure is complex or reused.
+  ```tsx
+  // Preferred
+  export function Button({ label, onClick }: { label: string; onClick: () => void }) { ... }
+  ```
+
+### Tailwind CSS Conventions
+- **Size Presets:** Use Tailwind's default size presets instead of arbitrary values whenever possible.
+  - `rounded-xl` instead of `rounded-[12px]`
+  - `w-64` instead of `w-[256px]`
+- **Modern Class Names:** Use the shorter, modern Tailwind class names.
+  - `shrink-0` instead of `flex-shrink-0`
+  - `grow` instead of `flex-grow`
+
 ### File Headers
 - **Mandatory:** Every new file must start with a top-level comment describing its single responsibility.
   ```tsx
@@ -48,7 +63,7 @@ This document serves as the **Supreme Law** for all code modifications. Agents m
 
 ### TypeScript Strict Mode
 - **No `any`:** The usage of `any` is strictly prohibited. Define clear Interfaces or Types for all structures.
-- **Prop Types:** All component props must be typed explicitly.
+- **Prop Types:** All component props must be typed explicitly (inline or interface).
 
 ### Async Interaction
 - **Feedback Loop:** All asynchronous interactions (data fetching, form submission) MUST handle and display:
@@ -60,7 +75,12 @@ This document serves as the **Supreme Law** for all code modifications. Agents m
 - **Build:** `npm run build` (tsc + vite)
 - **Dev:** `npm run dev`
 - **Lint:** `npm run lint` (Biome - run this before finishing any task)
+- **Type Check:** `npx tsc -b` (Strict Type Checking)
+- **Full Check:** `npm run lint && npx tsc -b` (Recommended before commit)
 - **Deploy:** `npm run deploy`
+
+### Environment Recovery
+- **Missing Node/NPM:** If `node` or `npm` are not found in the PATH, check `$HOME/.nvm` and try to source `nvm.sh` to resolve the environment.
 
 ## 6. Agent Self-Review Protocol
 
@@ -72,5 +92,6 @@ Before outputting ANY code, you (the Agent) must perform this internal audit:
 4.  [ ] **Safety Check:** Did I use `any`? -> *Define the type.*
 5.  [ ] **UI Logic:** Am I rebuilding a standard interaction? -> *Use @base-ui/react.*
 6.  [ ] **Feedback:** Did I handle Loading/Error states?
+7.  [ ] **Quality Check:** Did I run `npm run lint && npx tsc -b`?
 
 **Refactoring Priority:** If the user asks for a feature but the current code violates these principles, **propose a refactor first**. Do not build technical debt on top of shaky foundations.
