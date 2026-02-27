@@ -45,6 +45,19 @@ function isValidArticleInput(body: unknown): body is ArticleInput {
   );
 }
 
+function isValidArticleUpdateInput(
+  body: unknown,
+): body is Omit<ArticleInput, "slug"> {
+  if (typeof body !== "object" || body === null) return false;
+  const b = body as Record<string, unknown>;
+  return (
+    typeof b.title === "string" &&
+    typeof b.summary === "string" &&
+    typeof b.content === "string" &&
+    typeof b.tags === "string"
+  );
+}
+
 async function handleListArticles(env: Env): Promise<Response> {
   const result = await env.DB.prepare(
     "SELECT id, title, slug, summary, tags, created_at, author, disclosure FROM articles ORDER BY created_at DESC",
@@ -169,7 +182,7 @@ async function handleUpdateArticle(
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!isValidArticleInput(body)) {
+  if (!isValidArticleUpdateInput(body)) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
 

@@ -12,17 +12,45 @@ import { NavLink, Link as RouterLink } from "react-router-dom";
 import { Button } from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
 
-const navItems = [
-  { to: "/admin", label: "仪表盘", icon: LayoutDashboard, end: true },
-  { to: "/admin/projects", label: "项目管理", icon: FolderKanban, end: false },
-  { to: "/admin/links", label: "链接管理", icon: Link, end: false },
-  { to: "/admin/articles", label: "文章管理", icon: FileText, end: false },
+const allNavItems = [
+  {
+    to: "/admin",
+    label: "仪表盘",
+    icon: LayoutDashboard,
+    end: true,
+    requireAll: false,
+  },
+  {
+    to: "/admin/articles",
+    label: "文章管理",
+    icon: FileText,
+    end: false,
+    requireAll: false,
+  },
+  {
+    to: "/admin/projects",
+    label: "项目管理",
+    icon: FolderKanban,
+    end: false,
+    requireAll: true,
+  },
+  {
+    to: "/admin/links",
+    label: "链接管理",
+    icon: Link,
+    end: false,
+    requireAll: true,
+  },
 ];
 
-function SidebarNav() {
+function SidebarNav({ permission }: { permission: string }) {
+  const visibleItems = allNavItems.filter(
+    (item) => !item.requireAll || permission === "all",
+  );
+
   return (
     <nav className="w-48 shrink-0 bg-white border-r border-slate-200 py-4 px-3 flex flex-col gap-1">
-      {navItems.map(({ to, label, icon: Icon, end }) => (
+      {visibleItems.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
@@ -79,7 +107,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
-        <SidebarNav />
+        <SidebarNav permission={userInfo?.permission ?? ""} />
         <main className="flex-1 p-8 overflow-auto">{children}</main>
       </div>
     </div>
