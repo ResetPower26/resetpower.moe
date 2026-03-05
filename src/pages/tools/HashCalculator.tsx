@@ -1,6 +1,7 @@
 // Responsible for the hash calculator tool supporting MD5, SHA-1, SHA-256, SHA-512.
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { BackButton } from "../../components/BackButton";
 import { Button } from "../../components/Button";
 
 type HashAlgorithm = "MD5" | "SHA-1" | "SHA-256" | "SHA-512";
@@ -215,7 +216,6 @@ async function computeHash(
 }
 
 export function HashCalculator() {
-  const navigate = useNavigate();
   const [inputText, setInputText] = useState("");
   const [selectedAlgorithm, setSelectedAlgorithm] =
     useState<HashAlgorithm>("SHA-256");
@@ -247,14 +247,10 @@ export function HashCalculator() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <button
-        type="button"
-        onClick={() => navigate("/tools")}
-        className="text-sm text-slate-500 hover:text-blue-600 mb-6 inline-flex items-center gap-1 transition-colors"
-      >
-        ← 返回工具栏
-      </button>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">哈希值计算</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <BackButton to="/tools" />
+        <h1 className="text-2xl font-bold text-slate-800">哈希值计算</h1>
+      </div>
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm font-medium text-slate-600 mb-2">选择算法</p>

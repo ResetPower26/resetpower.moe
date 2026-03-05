@@ -1,6 +1,7 @@
 // Responsible for the URL encode/decode tool using percent-encoding.
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { BackButton } from "../../components/BackButton";
 import { Button } from "../../components/Button";
 
 type UrlMode = "encode" | "decode";
@@ -30,7 +31,6 @@ const urlProcessors: Record<
 };
 
 export function UrlEncoder() {
-  const navigate = useNavigate();
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -56,14 +56,10 @@ export function UrlEncoder() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <button
-        type="button"
-        onClick={() => navigate("/tools")}
-        className="text-sm text-slate-500 hover:text-blue-600 mb-6 inline-flex items-center gap-1 transition-colors"
-      >
-        ← 返回工具栏
-      </button>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">URL 编解码</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <BackButton to="/tools" />
+        <h1 className="text-2xl font-bold text-slate-800">URL 编解码</h1>
+      </div>
       <div className="flex gap-3 mb-4">
         <Button
           variant={activeMode === "encode" ? "primary" : "secondary"}

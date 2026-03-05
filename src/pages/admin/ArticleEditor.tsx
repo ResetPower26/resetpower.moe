@@ -1,4 +1,6 @@
 // Responsible for rendering the article create/edit form with live Markdown preview.
+
+import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
@@ -160,7 +162,7 @@ export function ArticleEditor() {
           className="text-sm px-3 py-1.5"
           onClick={() => navigate("/admin/articles")}
         >
-          ← 返回列表
+          <ArrowLeft size={14} aria-hidden="true" /> 返回列表
         </Button>
       </div>
 

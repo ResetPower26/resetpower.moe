@@ -122,46 +122,48 @@ export function ArticleList() {
         {!isLoading && !errorMessage && filteredArticles.length > 0 && (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {filteredArticles.map((article) => (
-              <Card
+              <Link
                 key={article.id}
-                className="flex max-w-xl flex-col items-start justify-between p-6 h-full hover:shadow-lg transition-shadow duration-300"
+                to={`/articles/${article.slug}`}
+                className="block"
               >
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <time
-                    dateTime={new Date(article.created_at * 1000).toISOString()}
-                    className="text-slate-500"
-                  >
-                    {formatDate(article.created_at)}
-                  </time>
-                  {article.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-blue-50 px-3 py-1.5 font-medium text-blue-600"
+                <Card className="flex max-w-xl flex-col items-start justify-between p-6 h-full hover:shadow-lg transition-shadow duration-300">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <time
+                      dateTime={new Date(
+                        article.created_at * 1000,
+                      ).toISOString()}
+                      className="text-slate-500"
                     >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="group relative mt-4 grow">
-                  <h3 className="text-xl font-semibold leading-6 text-slate-900 group-hover:text-blue-600 transition-colors">
-                    <Link to={`/articles/${article.slug}`}>
-                      <span className="absolute inset-0" />
+                      {formatDate(article.created_at)}
+                    </time>
+                    {article.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-blue-50 px-3 py-1.5 font-medium text-blue-600"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-4 grow">
+                    <h3 className="text-xl font-semibold leading-6 text-slate-900 group-hover:text-blue-600 transition-colors">
                       {article.title}
-                    </Link>
-                  </h3>
-                  <p className="mt-5 line-clamp-3 text-sm leading-6 text-slate-600">
-                    {article.summary}
-                  </p>
-                </div>
-                <div className="mt-4 flex flex-col gap-1 text-xs text-slate-400 w-full">
-                  <span>作者：{article.author}</span>
-                  {article.disclosure && (
-                    <span className="text-amber-600">
-                      ⚠ {article.disclosure}
-                    </span>
-                  )}
-                </div>
-              </Card>
+                    </h3>
+                    <p className="mt-5 line-clamp-3 text-sm leading-6 text-slate-600">
+                      {article.summary}
+                    </p>
+                  </div>
+                  <div className="mt-4 flex flex-col gap-1 text-xs text-slate-400 w-full">
+                    <span>作者：{article.author}</span>
+                    {article.disclosure && (
+                      <span className="text-amber-600">
+                        ⚠ {article.disclosure}
+                      </span>
+                    )}
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

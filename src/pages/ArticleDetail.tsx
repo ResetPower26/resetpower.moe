@@ -1,10 +1,11 @@
 // Responsible for rendering the full article detail page with Markdown content.
 
 import ReactMarkdown from "react-markdown";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import { BackButton } from "../components/BackButton";
 import { useArticleDetail } from "../hooks/useArticleDetail";
 
 function formatDate(timestamp: number): string {
@@ -41,28 +42,19 @@ export function ArticleDetail() {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16 text-center">
         <p className="text-red-500">{errorMessage ?? "文章不存在。"}</p>
-        <Link
-          to="/articles"
-          className="mt-4 inline-block text-blue-600 hover:underline"
-        >
-          ← 返回文章列表
-        </Link>
       </div>
     );
   }
 
   return (
     <article className="max-w-3xl mx-auto px-6 py-16">
-      {/* Back link */}
-      <Link
-        to="/articles"
-        className="text-sm text-blue-600 hover:underline mb-8 inline-block"
-      >
-        ← 返回文章列表
-      </Link>
-
+      {/* Back button */}
+      <div className="flex items-center gap-2 mb-6">
+        <BackButton to="/articles" />
+        <span className="text-slate-700">返回文章列表</span>
+      </div>
       {/* Header */}
-      <h1 className="text-4xl font-bold tracking-tight text-slate-900 mt-4">
+      <h1 className="text-4xl font-bold tracking-tight text-slate-900">
         {article.title}
       </h1>
 

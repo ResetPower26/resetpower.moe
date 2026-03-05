@@ -1,5 +1,5 @@
 // Responsible for rendering the projects list with loading and error states.
-import { Github, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 import { Card } from "../components/Card";
 import { useProjects } from "../hooks/useProjects";
 
@@ -77,7 +77,11 @@ export function ProjectList() {
                     rel="noopener noreferrer"
                     className="flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
                   >
-                    <Github className="h-4 w-4 mr-1.5" />
+                    <img
+                      src="/icons/GitHub_Invertocat_Black.svg"
+                      alt="GitHub"
+                      className="h-4 w-4 mr-1.5"
+                    />
                     GitHub
                   </a>
                   {project.link_demo && (
