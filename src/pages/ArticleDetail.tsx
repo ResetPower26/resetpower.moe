@@ -1,5 +1,6 @@
 // Responsible for rendering the full article detail page with Markdown content.
 
+import { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import rehypeKatex from "rehype-katex";
@@ -33,6 +34,14 @@ function ArticleDetailSkeleton() {
 export function ArticleDetail() {
   const { slug = "" } = useParams<{ slug: string }>();
   const { article, isLoading, errorMessage } = useArticleDetail(slug);
+
+  useEffect(() => {
+    if (!article) return;
+    document.title = article.title;
+    return () => {
+      document.title = "ResetPower";
+    };
+  }, [article]);
 
   if (isLoading) {
     return <ArticleDetailSkeleton />;
