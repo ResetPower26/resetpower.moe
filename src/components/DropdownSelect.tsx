@@ -43,7 +43,7 @@ export function DropdownSelect<T extends string>({
                 <Select.Item
                   key={option.value}
                   value={option.value}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 outline-none data-[highlighted]:bg-slate-50"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 outline-none data-highlighted:bg-slate-50"
                 >
                   <Select.ItemIndicator className="shrink-0">
                     <Check size={12} className="text-blue-600" />

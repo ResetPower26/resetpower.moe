@@ -40,12 +40,22 @@ This document serves as the **Supreme Law** for all code modifications. Agents m
   ```
 
 ### Tailwind CSS Conventions
-- **Size Presets:** Use Tailwind's default size presets instead of arbitrary values whenever possible.
+- **Size Presets:** Use Tailwind's default size presets instead of arbitrary bracket values whenever a standard utility exists.
   - `rounded-xl` instead of `rounded-[12px]`
   - `w-64` instead of `w-[256px]`
+  - `min-h-9.5` instead of `min-h-[38px]`
+  - `h-120` instead of `h-[480px]`
+  - **Rule:** Before using any `*-[<value>]` form, verify no standard preset covers it. Arbitrary values are only acceptable when no preset matches.
 - **Modern Class Names:** Use the shorter, modern Tailwind class names.
   - `shrink-0` instead of `flex-shrink-0`
   - `grow` instead of `flex-grow`
+- **Data Attribute Variants (Tailwind v4):** Use bare data-attribute variant syntax without brackets.
+  - `data-highlighted:bg-slate-50` instead of `data-[highlighted]:bg-slate-50`
+  - `data-disabled:opacity-50` instead of `data-[disabled]:opacity-50`
+  - The bracket form `data-[attr]:` is the Tailwind v3 pattern; bare `data-attr:` is required for v4.
+- **CSS Variables over `theme()`:** Inside arbitrary value brackets, reference theme tokens via CSS custom properties, not the `theme()` build-time function.
+  - `[box-shadow:0_2px_0_0_var(--color-blue-600)]` instead of `[box-shadow:0_2px_0_0_theme(colors.blue.600)]`
+  - General pattern: `theme(colors.<name>.<shade>)` → `var(--color-<name>-<shade>)`
 
 ### File Headers
 - **Mandatory:** Every new file must start with a top-level comment describing its single responsibility.

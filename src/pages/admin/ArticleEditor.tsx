@@ -220,7 +220,7 @@ export function ArticleEditor() {
           <p className="block text-sm font-medium text-slate-700 mb-1">
             正文内容
           </p>
-          <div className="grid grid-cols-2 gap-4 h-[480px]">
+          <div className="grid grid-cols-2 gap-4 h-120">
             <textarea
               id="content"
               value={form.content}

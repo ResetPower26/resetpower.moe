@@ -14,6 +14,7 @@ export function Navbar() {
     { name: "文章", href: "/articles" },
     { name: "项目", href: "/projects" },
     { name: "链接", href: "/links" },
+    { name: "工具栏", href: "/tools" },
     { name: "关于我", href: "/about" },
   ];
 
@@ -41,7 +42,7 @@ export function Navbar() {
                 end
                 className={({ isActive }) =>
                   isActive
-                    ? "text-blue-600 font-semibold [box-shadow:0_2px_0_0_theme(colors.blue.600)] transition-colors"
+                    ? "text-blue-600 font-semibold [box-shadow:0_2px_0_0_var(--color-blue-600)] transition-colors"
                     : "text-slate-600 hover:text-blue-600 font-medium transition-colors"
                 }
               >

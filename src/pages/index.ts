@@ -4,3 +4,4 @@ export * from "./Articles";
 export * from "./Home";
 export * from "./Links";
 export * from "./Projects";
+export * from "./Tools";

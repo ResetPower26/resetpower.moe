@@ -68,7 +68,7 @@ export function TagInput({
   }
 
   return (
-    <label className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white cursor-text min-h-[38px]">
+    <label className="flex flex-wrap gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white cursor-text min-h-9.5">
       {value.map((tag, i) => (
         <TagPill key={tag} label={tag} onRemove={() => removeTag(i)} />
       ))}

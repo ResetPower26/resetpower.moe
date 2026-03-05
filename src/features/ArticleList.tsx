@@ -20,6 +20,15 @@ function buildTagOptions(tags: string[]): { value: string; label: string }[] {
   ];
 }
 
+function buildAuthorOptions(
+  authors: string[],
+): { value: string; label: string }[] {
+  return [
+    { value: "", label: "全部作者" },
+    ...authors.map((a) => ({ value: a, label: a })),
+  ];
+}
+
 function formatDate(timestamp: number): string {
   return new Date(timestamp * 1000).toLocaleDateString("zh-CN", {
     year: "numeric",
@@ -51,12 +60,15 @@ export function ArticleList() {
   const {
     filteredArticles,
     allTags,
+    allAuthors,
     searchQuery,
     setSearchQuery,
     sortOrder,
     setSortOrder,
     activeTag,
     setActiveTag,
+    activeAuthor,
+    setActiveAuthor,
   } = useArticleFilter(articles);
 
   return (
@@ -85,6 +97,12 @@ export function ArticleList() {
             onChange={setActiveTag}
             options={buildTagOptions(allTags)}
             label="全部标签"
+          />
+          <DropdownSelect
+            value={activeAuthor}
+            onChange={setActiveAuthor}
+            options={buildAuthorOptions(allAuthors)}
+            label="全部作者"
           />
         </div>
 

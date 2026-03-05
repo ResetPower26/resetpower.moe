@@ -29,30 +29,45 @@ function filterByTag(articles: Article[], tag: string): Article[] {
   return articles.filter((a) => a.tags.includes(tag));
 }
 
+function filterByAuthor(articles: Article[], author: string): Article[] {
+  if (!author) return articles;
+  return articles.filter((a) => a.author === author);
+}
+
 export function useArticleFilter(articles: Article[]) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("date-desc");
   const [activeTag, setActiveTag] = useState("");
+  const [activeAuthor, setActiveAuthor] = useState("");
 
   const allTags = useMemo(
     () => Array.from(new Set(articles.flatMap((a) => a.tags))).sort(),
     [articles],
   );
 
+  const allAuthors = useMemo(
+    () => Array.from(new Set(articles.map((a) => a.author))).sort(),
+    [articles],
+  );
+
   const filteredArticles = useMemo(() => {
     const bySearch = filterBySearch(articles, searchQuery);
     const byTag = filterByTag(bySearch, activeTag);
-    return sortArticles(byTag, sortOrder);
-  }, [articles, searchQuery, activeTag, sortOrder]);
+    const byAuthor = filterByAuthor(byTag, activeAuthor);
+    return sortArticles(byAuthor, sortOrder);
+  }, [articles, searchQuery, activeTag, activeAuthor, sortOrder]);
 
   return {
     filteredArticles,
     allTags,
+    allAuthors,
     searchQuery,
     setSearchQuery,
     sortOrder,
     setSortOrder,
     activeTag,
     setActiveTag,
+    activeAuthor,
+    setActiveAuthor,
   };
 }
