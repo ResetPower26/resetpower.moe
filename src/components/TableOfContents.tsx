@@ -10,7 +10,7 @@ function TocItem({ heading, depth }: { heading: TocHeading; depth: number }) {
   return (
     <li>
       <div
-        className="flex items-center gap-2"
+        className="flex items-start gap-2"
         style={{ paddingLeft: `${depth * 14}px` }}
       >
         {hasChildren ? (
@@ -27,7 +27,7 @@ function TocItem({ heading, depth }: { heading: TocHeading; depth: number }) {
         )}
         <a
           href={`#${heading.id}`}
-          className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors leading-snug py-1 truncate"
+          className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors leading-snug py-1"
         >
           {heading.text}
         </a>

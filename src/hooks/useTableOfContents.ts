@@ -9,17 +9,46 @@ export interface TocHeading {
   children: TocHeading[];
 }
 
+// Strip trailing ATX closing sequence (e.g. "## title ##" → "title")
+function stripAtxClose(text: string): string {
+  return text.replace(/\s+#+\s*$/, "").trim();
+}
+
 function parseHeadings(markdown: string): TocHeading[] {
   const roots: TocHeading[] = [];
-  // stack holds [node, level] pairs for the current ancestor chain
   const stack: { node: TocHeading; level: number }[] = [];
+  // Fenced code block tracking: store the opening fence char+length to match the closing fence
+  let fenceMarker: string | null = null;
 
   for (const line of markdown.split("\n")) {
-    const match = line.match(/^(#{1,6})\s+(.+)/);
-    if (!match) continue;
+    // Skip indented code blocks (4 spaces or 1 tab)
+    if (/^( {4}|\t)/.test(line)) continue;
 
-    const level = match[1].length;
-    const text = match[2].trim();
+    // Detect fenced code block open/close (``` or ~~~, 3+ chars, same char to close)
+    const fenceMatch = line.match(/^(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      if (fenceMarker === null) {
+        // Opening fence: record the fence character and minimum length
+        fenceMarker = fenceMatch[1][0];
+      } else if (
+        line
+          .trimEnd()
+          .split("")
+          .every((c) => c === fenceMarker)
+      ) {
+        // Closing fence: must consist solely of the same fence character
+        fenceMarker = null;
+      }
+      continue;
+    }
+    if (fenceMarker !== null) continue;
+
+    // Match ATX headings: 1–6 # chars followed by a space (CommonMark)
+    const headingMatch = line.match(/^(#{1,6}) (.+)/);
+    if (!headingMatch) continue;
+
+    const level = headingMatch[1].length;
+    const text = stripAtxClose(headingMatch[2]);
     const node: TocHeading = { id: slugify(text), text, level, children: [] };
 
     // Pop ancestors that are at the same or deeper level
