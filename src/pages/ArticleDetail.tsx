@@ -1,13 +1,44 @@
-// Responsible for rendering the full article detail page with Markdown content.
+// Responsible for rendering the full article detail page with Markdown content and a table of contents.
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { BackButton } from "../components/BackButton";
+import {
+  TableOfContents,
+  TableOfContentsMobileDrawer,
+} from "../components/TableOfContents";
 import { useArticleDetail } from "../hooks/useArticleDetail";
+import { useTableOfContents } from "../hooks/useTableOfContents";
+import { slugify } from "../utils/slugify";
+
+type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+function makeHeadingComponent(Tag: HeadingLevel) {
+  return function HeadingWithId({
+    children,
+    ...props
+  }: React.HTMLAttributes<HTMLHeadingElement>) {
+    const text = typeof children === "string" ? children : "";
+    return (
+      <Tag id={slugify(text)} {...props}>
+        {children}
+      </Tag>
+    );
+  };
+}
+
+const markdownHeadingComponents = {
+  h1: makeHeadingComponent("h1"),
+  h2: makeHeadingComponent("h2"),
+  h3: makeHeadingComponent("h3"),
+  h4: makeHeadingComponent("h4"),
+  h5: makeHeadingComponent("h5"),
+  h6: makeHeadingComponent("h6"),
+};
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp * 1000).toLocaleDateString("zh-CN", {
@@ -31,53 +62,47 @@ function ArticleDetailSkeleton() {
   );
 }
 
-export function ArticleDetail() {
-  const { slug = "" } = useParams<{ slug: string }>();
-  const { article, isLoading, errorMessage } = useArticleDetail(slug);
-
-  useEffect(() => {
-    if (!article) return;
-    document.title = article.title;
-    return () => {
-      document.title = "ResetPower";
-    };
-  }, [article]);
-
-  if (isLoading) {
-    return <ArticleDetailSkeleton />;
-  }
-
-  if (errorMessage || !article) {
-    return (
-      <div className="max-w-3xl mx-auto px-6 py-16 text-center">
-        <p className="text-red-500">{errorMessage ?? "文章不存在。"}</p>
-      </div>
-    );
-  }
-
+function ArticleBody({ content }: { content: string }) {
   return (
-    <article className="max-w-3xl mx-auto px-6 py-16">
-      {/* Back button */}
-      <div className="flex items-center gap-2 mb-6">
-        <BackButton to="/articles" />
-        <span className="text-slate-700">返回文章列表</span>
-      </div>
-      {/* Header */}
+    <div className="prose prose-slate max-w-none mt-10">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={markdownHeadingComponents}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+function ArticleMeta({
+  title,
+  createdAt,
+  author,
+  tags,
+  disclosure,
+}: {
+  title: string;
+  createdAt: number;
+  author: string;
+  tags: string[];
+  disclosure?: string;
+}) {
+  return (
+    <>
       <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-        {article.title}
+        {title}
       </h1>
-
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
-        <time dateTime={new Date(article.created_at * 1000).toISOString()}>
-          {formatDate(article.created_at)}
+        <time dateTime={new Date(createdAt * 1000).toISOString()}>
+          {formatDate(createdAt)}
         </time>
-        <span>作者：{article.author}</span>
+        <span>作者：{author}</span>
       </div>
-
-      {/* Tags */}
-      {article.tags.length > 0 && (
+      {tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
-          {article.tags.map((tag) => (
+          {tags.map((tag) => (
             <span
               key={tag}
               className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600"
@@ -87,23 +112,168 @@ export function ArticleDetail() {
           ))}
         </div>
       )}
-
-      {/* Disclosure */}
-      {article.disclosure && (
+      {disclosure && (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          ⚠ 创作声明：{article.disclosure}
+          ⚠ 创作声明：{disclosure}
         </div>
       )}
+    </>
+  );
+}
 
-      {/* Content */}
-      <div className="prose prose-slate max-w-none mt-10">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex]}
-        >
-          {article.content}
-        </ReactMarkdown>
+export function ArticleDetail() {
+  const { slug = "" } = useParams<{ slug: string }>();
+  const { article, isLoading, errorMessage } = useArticleDetail(slug);
+  const headings = useTableOfContents(article?.content ?? "");
+
+  // Desktop sidebar: open by default
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Mobile drawer: closed by default
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    if (!article) return;
+    document.title = article.title;
+    return () => {
+      document.title = "ResetPower";
+    };
+  }, [article]);
+
+  if (isLoading) return <ArticleDetailSkeleton />;
+  if (errorMessage || !article) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+        <p className="text-red-500">{errorMessage ?? "文章不存在。"}</p>
       </div>
-    </article>
+    );
+  }
+
+  return (
+    <div className="relative flex min-h-screen">
+      {/* ── Desktop sidebar (lg+) ── */}
+      <aside
+        className={`
+          hidden lg:flex flex-col sticky top-16 shrink-0
+          h-[calc(100vh-4rem)] border-r border-slate-100 bg-white overflow-hidden
+          transition-all duration-300 ease-in-out
+          ${isSidebarOpen ? "w-64 px-6 py-6" : "w-10 items-center py-6"}
+        `}
+      >
+        {/* Sidebar toggle button — always visible */}
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen((prev) => !prev)}
+          className={`shrink-0 mb-4 flex items-center justify-center w-9 h-9 rounded-full border border-slate-300 text-slate-700 hover:text-blue-600 hover:border-blue-400 transition-colors cursor-pointer ${isSidebarOpen ? "self-end" : "self-center"}`}
+          aria-label={isSidebarOpen ? "收起目录" : "展开目录"}
+        >
+          {isSidebarOpen ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          )}
+        </button>
+        {/* Always rendered; fades in/out with the width transition */}
+        <div
+          className={`flex-1 min-h-0 transition-opacity duration-200 ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        >
+          <TableOfContents headings={headings} />
+        </div>
+      </aside>
+
+      {/* ── Mobile drawer toggle button (< lg) ── */}
+      <button
+        type="button"
+        onClick={() => setIsMobileDrawerOpen(true)}
+        className="lg:hidden fixed top-20 left-4 z-40 flex items-center justify-center w-9 h-9 rounded-full bg-white border border-slate-300 text-slate-700 hover:text-blue-600 hover:border-blue-400 transition-colors cursor-pointer"
+        aria-label="展开目录"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="15" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {/* ── Mobile drawer overlay (< lg) — always in DOM, animated via opacity/translate ── */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="文章目录"
+        aria-hidden={!isMobileDrawerOpen}
+        className={`lg:hidden fixed inset-x-0 bottom-0 top-16 z-[60] flex transition-opacity duration-300 ease-in-out ${isMobileDrawerOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onKeyDown={(e) => e.key === "Escape" && setIsMobileDrawerOpen(false)}
+      >
+        {/* backdrop */}
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/30 w-full cursor-default"
+          onClick={() => setIsMobileDrawerOpen(false)}
+          aria-label="关闭目录"
+          tabIndex={isMobileDrawerOpen ? 0 : -1}
+        />
+        {/* drawer panel — slides in from the left */}
+        <div
+          className={`relative z-[61] w-72 h-full bg-white shadow-xl px-6 py-6 overflow-y-auto transition-transform duration-300 ease-in-out ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
+          <TableOfContentsMobileDrawer
+            headings={headings}
+            onClose={() => setIsMobileDrawerOpen(false)}
+          />
+        </div>
+      </div>
+
+      {/* ── Main article content ── */}
+      <article className="flex-1 min-w-0 max-w-3xl mx-auto px-6 py-16">
+        <div className="flex items-center gap-2 mb-6">
+          <BackButton to="/articles" />
+          <span className="text-slate-700">返回文章列表</span>
+        </div>
+        <ArticleMeta
+          title={article.title}
+          createdAt={article.created_at}
+          author={article.author}
+          tags={article.tags}
+          disclosure={article.disclosure}
+        />
+        <ArticleBody content={article.content} />
+      </article>
+    </div>
   );
 }
