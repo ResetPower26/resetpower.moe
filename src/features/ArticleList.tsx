@@ -55,7 +55,7 @@ function ArticleListSkeleton() {
   );
 }
 
-export function ArticleList() {
+export function ArticleList({ hideHeader = false }: { hideHeader?: boolean }) {
   const { articles, isLoading, errorMessage } = useArticles();
   const {
     filteredArticles,
@@ -72,14 +72,23 @@ export function ArticleList() {
   } = useArticleFilter(articles);
 
   return (
-    <div className="bg-slate-50 py-24 sm:py-32" id="articles">
+    <div
+      className={
+        hideHeader
+          ? "bg-slate-50 pt-8 pb-24 sm:pb-32"
+          : "bg-slate-50 py-24 sm:py-32"
+      }
+      id="articles"
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            文章
-          </h2>
-          <p className="mt-2 text-lg leading-8 text-slate-600">一些文章🤔</p>
-        </div>
+        {!hideHeader && (
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              文章
+            </h2>
+            <p className="mt-2 text-lg leading-8 text-slate-600">一些文章🤔</p>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="mx-auto mt-10 max-w-4xl flex flex-col sm:flex-row gap-3">

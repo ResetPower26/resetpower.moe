@@ -13,6 +13,7 @@ import {
 } from "./pages";
 import { ArticleEditor } from "./pages/admin/ArticleEditor";
 import { AdminArticles } from "./pages/admin/Articles";
+import { AdminColumns } from "./pages/admin/Columns";
 import { Dashboard } from "./pages/admin/Dashboard";
 import { AdminLinks } from "./pages/admin/Links";
 import { Login } from "./pages/admin/Login";
@@ -146,6 +147,16 @@ function App() {
             <ProtectedRoute requiredPermission="all">
               <AdminLayout>
                 <AdminLinks />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/columns"
+          element={
+            <ProtectedRoute requiredPermission="all">
+              <AdminLayout>
+                <AdminColumns />
               </AdminLayout>
             </ProtectedRoute>
           }

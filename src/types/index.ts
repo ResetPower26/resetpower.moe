@@ -13,6 +13,24 @@ export interface ArticleDetail extends Article {
   content: string;
 }
 
+export interface ArticleSummary {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  created_at: number;
+  author: string;
+}
+
+export interface Column {
+  id: number;
+  name: string;
+  description: string | null;
+  cover_image: string | null;
+  article_ids: string;
+  articles: ArticleSummary[];
+}
+
 export interface Project {
   id: number;
   name: string;

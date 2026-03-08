@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Link,
   LogOut,
+  Newspaper,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink, Link as RouterLink } from "react-router-dom";
@@ -38,6 +39,13 @@ const allNavItems = [
     to: "/admin/links",
     label: "链接管理",
     icon: Link,
+    end: false,
+    requireAll: true,
+  },
+  {
+    to: "/admin/columns",
+    label: "专栏管理",
+    icon: Newspaper,
     end: false,
     requireAll: true,
   },

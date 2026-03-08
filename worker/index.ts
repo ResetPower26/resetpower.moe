@@ -4,6 +4,7 @@ import { handlePreflight, withSecurityHeaders } from "./lib/headers";
 import { injectOgMeta } from "./lib/og-meta";
 import { handleArticleRoutes } from "./routes/articles";
 import { handleAuthRoutes } from "./routes/auth";
+import { handleColumnRoutes } from "./routes/columns";
 import { handleLinkRoutes } from "./routes/links";
 import { handleProjectRoutes } from "./routes/projects";
 
@@ -61,6 +62,7 @@ export default {
         (await handleAuthRoutes(request, env, url.pathname)) ??
         (await handleArticleRoutes(request, env, url.pathname)) ??
         (await handleProjectRoutes(request, env, url.pathname)) ??
+        (await handleColumnRoutes(request, env, url.pathname)) ??
         (await handleLinkRoutes(request, env, url.pathname));
       if (apiResponse) {
         return withSecurityHeaders(apiResponse, origin);
