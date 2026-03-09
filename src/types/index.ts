@@ -5,8 +5,10 @@ export interface Article {
   summary: string;
   tags: string[];
   created_at: number;
+  updated_at: number | null;
   author: string;
   disclosure: string;
+  draft: boolean;
 }
 
 export interface ArticleDetail extends Article {

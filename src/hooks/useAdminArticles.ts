@@ -4,7 +4,7 @@ import {
   type ArticleInput,
   createArticle,
   deleteArticle,
-  fetchArticleList,
+  fetchAdminArticleList,
   updateArticle,
 } from "../services/articles";
 import type { Article } from "../types";
@@ -31,7 +31,7 @@ export function useAdminArticles(): UseAdminArticlesResult {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchArticleList();
+      const data = await fetchAdminArticleList();
       setArticles(data);
     } catch {
       setError("加载文章列表失败");
@@ -57,6 +57,7 @@ export function useAdminArticles(): UseAdminArticlesResult {
             content: input.content,
             tags: input.tags,
             disclosure: input.disclosure,
+            draft: input.draft,
           };
           await updateArticle(id, updateInput);
         } else {

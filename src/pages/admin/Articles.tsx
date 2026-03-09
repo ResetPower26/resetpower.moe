@@ -113,7 +113,12 @@ export function AdminArticles() {
                       className="hover:bg-slate-50 transition-colors"
                     >
                       <td className="px-4 py-3 text-slate-800 font-medium max-w-xs truncate">
-                        {article.title}
+                        <span>{article.title}</span>
+                        {article.draft && (
+                          <span className="ml-2 inline-block text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                            草稿
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-slate-500 hidden md:table-cell">
                         {article.author}

@@ -21,7 +21,7 @@ async function fetchArticleMeta(
   slug: string,
 ): Promise<DbArticleMeta | null> {
   return env.DB.prepare(
-    "SELECT title, summary, content FROM articles WHERE slug = ?",
+    "SELECT title, summary, content FROM articles WHERE slug = ? AND draft = 0",
   )
     .bind(slug)
     .first<DbArticleMeta>();

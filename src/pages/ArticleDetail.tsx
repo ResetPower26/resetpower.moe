@@ -41,10 +41,12 @@ const markdownHeadingComponents = {
 };
 
 function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("zh-CN", {
+  return new Date(timestamp * 1000).toLocaleString("zh-CN", {
     year: "numeric",
     month: "long",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -79,12 +81,14 @@ function ArticleBody({ content }: { content: string }) {
 function ArticleMeta({
   title,
   createdAt,
+  updatedAt,
   author,
   tags,
   disclosure,
 }: {
   title: string;
   createdAt: number;
+  updatedAt: number | null;
   author: string;
   tags: string[];
   disclosure?: string;
@@ -96,8 +100,13 @@ function ArticleMeta({
       </h1>
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
         <time dateTime={new Date(createdAt * 1000).toISOString()}>
-          {formatDate(createdAt)}
+          发布于 {formatDate(createdAt)}
         </time>
+        {updatedAt !== null && (
+          <time dateTime={new Date(updatedAt * 1000).toISOString()}>
+            最后修改于 {formatDate(updatedAt)}
+          </time>
+        )}
         <span>作者：{author}</span>
       </div>
       {tags.length > 0 && (
@@ -268,6 +277,7 @@ export function ArticleDetail() {
         <ArticleMeta
           title={article.title}
           createdAt={article.created_at}
+          updatedAt={article.updated_at}
           author={article.author}
           tags={article.tags}
           disclosure={article.disclosure}

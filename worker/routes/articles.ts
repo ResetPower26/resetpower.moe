@@ -9,8 +9,10 @@ interface DbArticle {
   summary: string;
   tags: string;
   created_at: number;
+  updated_at: number | null;
   author: string;
   disclosure: string;
+  draft: number;
 }
 
 interface DbArticleDetail extends DbArticle {
@@ -24,12 +26,14 @@ interface ArticleInput {
   content: string;
   tags: string;
   disclosure?: string;
+  draft?: boolean;
 }
 
 function parseArticleTags(article: DbArticle) {
   return {
     ...article,
     tags: article.tags ? article.tags.split(";").map((t) => t.trim()) : [],
+    draft: article.draft === 1,
   };
 }
 
@@ -58,10 +62,18 @@ function isValidArticleUpdateInput(
   );
 }
 
-async function handleListArticles(env: Env): Promise<Response> {
-  const result = await env.DB.prepare(
-    "SELECT id, title, slug, summary, tags, created_at, author, disclosure FROM articles ORDER BY created_at DESC",
-  ).all<DbArticle>();
+async function handleListArticles(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const authHeader = request.headers.get("Authorization");
+  const isAuthed = authHeader?.startsWith("Bearer ");
+
+  const query = isAuthed
+    ? "SELECT id, title, slug, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles ORDER BY created_at DESC"
+    : "SELECT id, title, slug, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles WHERE draft = 0 ORDER BY created_at DESC";
+
+  const result = await env.DB.prepare(query).all<DbArticle>();
   return Response.json({ articles: result.results.map(parseArticleTags) });
 }
 
@@ -70,7 +82,7 @@ async function handleGetArticleBySlug(
   slug: string,
 ): Promise<Response> {
   const row = await env.DB.prepare(
-    "SELECT id, title, slug, content, summary, tags, created_at, author, disclosure FROM articles WHERE slug = ?",
+    "SELECT id, title, slug, content, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles WHERE slug = ? AND draft = 0",
   )
     .bind(slug)
     .first<DbArticleDetail>();
@@ -83,7 +95,7 @@ async function handleGetArticleBySlug(
 
 async function handleGetArticleById(env: Env, id: string): Promise<Response> {
   const row = await env.DB.prepare(
-    "SELECT id, title, slug, content, summary, tags, created_at, author, disclosure FROM articles WHERE id = ?",
+    "SELECT id, title, slug, content, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles WHERE id = ?",
   )
     .bind(id)
     .first<DbArticleDetail>();
@@ -128,9 +140,10 @@ async function handleCreateArticle(
 
   const id = nanoid();
   const now = Math.floor(Date.now() / 1000);
+  const draftValue = body.draft === true ? 1 : 0;
 
   await env.DB.prepare(
-    "INSERT INTO articles (id, title, slug, summary, content, tags, created_at, author, disclosure) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO articles (id, title, slug, summary, content, tags, created_at, author, disclosure, draft) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   )
     .bind(
       id,
@@ -142,6 +155,7 @@ async function handleCreateArticle(
       now,
       payload.username,
       body.disclosure ?? "",
+      draftValue,
     )
     .run();
 
@@ -186,8 +200,11 @@ async function handleUpdateArticle(
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  const now = Math.floor(Date.now() / 1000);
+  const draftValue = body.draft === true ? 1 : 0;
+
   const result = await env.DB.prepare(
-    "UPDATE articles SET title=?, summary=?, content=?, tags=?, disclosure=? WHERE id=?",
+    "UPDATE articles SET title=?, summary=?, content=?, tags=?, disclosure=?, draft=?, updated_at=? WHERE id=?",
   )
     .bind(
       body.title,
@@ -195,6 +212,8 @@ async function handleUpdateArticle(
       body.content,
       body.tags,
       body.disclosure ?? "",
+      draftValue,
+      now,
       id,
     )
     .run();
@@ -250,7 +269,7 @@ export async function handleArticleRoutes(
   pathname: string,
 ): Promise<Response | null> {
   if (pathname === "/api/articles/list" && request.method === "GET") {
-    return handleListArticles(env);
+    return handleListArticles(request, env);
   }
 
   if (pathname === "/api/articles" && request.method === "POST") {

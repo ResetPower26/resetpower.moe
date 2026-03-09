@@ -24,6 +24,7 @@ const emptyForm: ArticleFormState = {
   content: "",
   tags: [],
   disclosure: "",
+  draft: false,
 };
 
 function articleInputFromForm(form: ArticleFormState): ArticleInput {
@@ -117,6 +118,7 @@ export function ArticleEditor() {
           content: article.content,
           tags: article.tags,
           disclosure: article.disclosure ?? "",
+          draft: article.draft ?? false,
         });
       })
       .catch(() => setLoadError("加载文章失败，请刷新重试"))
@@ -249,6 +251,15 @@ export function ArticleEditor() {
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
+          <label className="flex items-center gap-2 text-sm text-slate-600 mr-auto cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={form.draft}
+              onChange={(e) => setField("draft")(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 accent-blue-600 cursor-pointer"
+            />
+            草稿（不公开发布）
+          </label>
           <Button
             variant="secondary"
             type="button"

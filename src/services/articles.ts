@@ -9,6 +9,7 @@ export interface ArticleInput {
   content: string;
   tags: string;
   disclosure: string;
+  draft: boolean;
 }
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -29,6 +30,13 @@ function authHeaders(): HeadersInit {
 
 export async function fetchArticleList(): Promise<Article[]> {
   const data = await apiFetch<{ articles: Article[] }>("/api/articles/list");
+  return data.articles;
+}
+
+export async function fetchAdminArticleList(): Promise<Article[]> {
+  const data = await apiFetch<{ articles: Article[] }>("/api/articles/list", {
+    headers: authHeaders(),
+  });
   return data.articles;
 }
 
