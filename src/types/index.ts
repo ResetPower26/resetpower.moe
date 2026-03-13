@@ -9,6 +9,7 @@ export interface Article {
   author: string;
   disclosure: string;
   draft: boolean;
+  column_id: number | null;
 }
 
 export interface ArticleDetail extends Article {

@@ -6,6 +6,7 @@ import {
   About,
   ArticleDetail,
   Articles,
+  ColumnDetail,
   Home,
   Links,
   Projects,
@@ -51,6 +52,14 @@ function App() {
           element={
             <MainLayout>
               <ArticleDetail />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/columns/:id"
+          element={
+            <MainLayout>
+              <ColumnDetail />
             </MainLayout>
           }
         />

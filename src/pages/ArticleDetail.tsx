@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -11,6 +11,7 @@ import {
   TableOfContents,
   TableOfContentsMobileDrawer,
 } from "../components/TableOfContents";
+import { useArticleColumn } from "../hooks/useArticleColumn";
 import { useArticleDetail } from "../hooks/useArticleDetail";
 import { useTableOfContents } from "../hooks/useTableOfContents";
 import { slugify } from "../utils/slugify";
@@ -98,6 +99,7 @@ function ArticleMeta({
   author,
   tags,
   disclosure,
+  columnId,
 }: {
   title: string;
   createdAt: number;
@@ -105,7 +107,9 @@ function ArticleMeta({
   author: string;
   tags: string[];
   disclosure?: string;
+  columnId: number | null;
 }) {
+  const { column } = useArticleColumn(columnId);
   return (
     <>
       <h1 className="text-4xl font-bold tracking-tight text-slate-900">
@@ -122,6 +126,17 @@ function ArticleMeta({
         )}
         <span>作者：{author}</span>
       </div>
+      {column && (
+        <p className="mt-2 text-sm text-slate-500">
+          来自专栏{" "}
+          <Link
+            to={`/columns/${column.id}`}
+            className="text-blue-500 font-medium hover:text-blue-600 hover:underline"
+          >
+            {column.name}
+          </Link>
+        </p>
+      )}
       {tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
@@ -295,6 +310,7 @@ export function ArticleDetail() {
           author={article.author}
           tags={article.tags}
           disclosure={article.disclosure}
+          columnId={article.column_id}
         />
         <ArticleBody content={article.content} />
       </article>

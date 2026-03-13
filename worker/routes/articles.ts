@@ -13,6 +13,7 @@ interface DbArticle {
   author: string;
   disclosure: string;
   draft: number;
+  column_id: number | null;
 }
 
 interface DbArticleDetail extends DbArticle {
@@ -70,8 +71,8 @@ async function handleListArticles(
   const isAuthed = authHeader?.startsWith("Bearer ");
 
   const query = isAuthed
-    ? "SELECT id, title, slug, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles ORDER BY created_at DESC"
-    : "SELECT id, title, slug, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles WHERE draft = 0 ORDER BY created_at DESC";
+    ? "SELECT id, title, slug, summary, tags, created_at, updated_at, author, disclosure, draft, column_id FROM articles ORDER BY created_at DESC"
+    : "SELECT id, title, slug, summary, tags, created_at, updated_at, author, disclosure, draft, column_id FROM articles WHERE draft = 0 ORDER BY created_at DESC";
 
   const result = await env.DB.prepare(query).all<DbArticle>();
   return Response.json({ articles: result.results.map(parseArticleTags) });
@@ -82,7 +83,7 @@ async function handleGetArticleBySlug(
   slug: string,
 ): Promise<Response> {
   const row = await env.DB.prepare(
-    "SELECT id, title, slug, content, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles WHERE slug = ? AND draft = 0",
+    "SELECT id, title, slug, content, summary, tags, created_at, updated_at, author, disclosure, draft, column_id FROM articles WHERE slug = ? AND draft = 0",
   )
     .bind(slug)
     .first<DbArticleDetail>();
@@ -95,7 +96,7 @@ async function handleGetArticleBySlug(
 
 async function handleGetArticleById(env: Env, id: string): Promise<Response> {
   const row = await env.DB.prepare(
-    "SELECT id, title, slug, content, summary, tags, created_at, updated_at, author, disclosure, draft FROM articles WHERE id = ?",
+    "SELECT id, title, slug, content, summary, tags, created_at, updated_at, author, disclosure, draft, column_id FROM articles WHERE id = ?",
   )
     .bind(id)
     .first<DbArticleDetail>();

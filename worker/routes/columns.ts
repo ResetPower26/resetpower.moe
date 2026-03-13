@@ -70,6 +70,35 @@ async function handleListColumns(env: Env): Promise<Response> {
   return Response.json({ columns: enriched });
 }
 
+async function syncArticleColumnIds(
+  env: Env,
+  columnId: number,
+  articleIds: string[],
+): Promise<void> {
+  if (articleIds.length > 0) {
+    const placeholders = articleIds.map(() => "?").join(",");
+    await env.DB.prepare(
+      `UPDATE articles SET column_id = ? WHERE id IN (${placeholders})`,
+    )
+      .bind(columnId, ...articleIds)
+      .run();
+  }
+}
+
+async function clearArticleColumnIds(
+  env: Env,
+  columnId: number,
+  articleIds: string[],
+): Promise<void> {
+  if (articleIds.length === 0) return;
+  const placeholders = articleIds.map(() => "?").join(",");
+  await env.DB.prepare(
+    `UPDATE articles SET column_id = NULL WHERE column_id = ? AND id IN (${placeholders})`,
+  )
+    .bind(columnId, ...articleIds)
+    .run();
+}
+
 async function handleCreateColumn(
   request: Request,
   env: Env,
@@ -102,10 +131,11 @@ async function handleCreateColumn(
     )
     .run();
 
-  return Response.json(
-    { success: true, id: result.meta.last_row_id },
-    { status: 201 },
-  );
+  const newColumnId = result.meta.last_row_id as number;
+  const articleIds = parseArticleIds(body.article_ids);
+  await syncArticleColumnIds(env, newColumnId, articleIds);
+
+  return Response.json({ success: true, id: newColumnId }, { status: 201 });
 }
 
 async function handleUpdateColumn(
@@ -130,6 +160,17 @@ async function handleUpdateColumn(
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  // Fetch existing article_ids before updating, to detect removed articles.
+  const existing = await env.DB.prepare(
+    "SELECT article_ids FROM columns WHERE id = ?",
+  )
+    .bind(id)
+    .first<{ article_ids: string }>();
+
+  if (!existing) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
+
   const result = await env.DB.prepare(
     "UPDATE columns SET name=?, description=?, cover_image=?, article_ids=? WHERE id=?",
   )
@@ -145,6 +186,17 @@ async function handleUpdateColumn(
   if (result.meta.changes === 0) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
+
+  const columnId = Number(id);
+  const newArticleIds = parseArticleIds(body.article_ids);
+  const oldArticleIds = parseArticleIds(existing.article_ids);
+  const removedIds = oldArticleIds.filter(
+    (aid) => !newArticleIds.includes(aid),
+  );
+
+  await clearArticleColumnIds(env, columnId, removedIds);
+  await syncArticleColumnIds(env, columnId, newArticleIds);
+
   return Response.json({ success: true });
 }
 
@@ -159,6 +211,16 @@ async function handleDeleteColumn(
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const existing = await env.DB.prepare(
+    "SELECT article_ids FROM columns WHERE id = ?",
+  )
+    .bind(id)
+    .first<{ article_ids: string }>();
+
+  if (!existing) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
+
   const result = await env.DB.prepare("DELETE FROM columns WHERE id=?")
     .bind(id)
     .run();
@@ -166,6 +228,11 @@ async function handleDeleteColumn(
   if (result.meta.changes === 0) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
+
+  const columnId = Number(id);
+  const articleIds = parseArticleIds(existing.article_ids);
+  await clearArticleColumnIds(env, columnId, articleIds);
+
   return Response.json({ success: true });
 }
 
