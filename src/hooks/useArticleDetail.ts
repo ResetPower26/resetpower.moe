@@ -15,12 +15,28 @@ export function useArticleDetail(slug: string): UseArticleDetailResult {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     setIsLoading(true);
     setErrorMessage(null);
-    fetchArticleBySlug(slug)
-      .then(setArticle)
-      .catch(() => setErrorMessage("文章加载失败，请稍后再试。"))
-      .finally(() => setIsLoading(false));
+
+    fetchArticleBySlug(slug, controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setArticle(data);
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        const isNetworkError =
+          err instanceof Error && err.name !== "AbortError";
+        if (isNetworkError) setErrorMessage("文章加载失败，请稍后再试。");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+    };
   }, [slug]);
 
   return { article, isLoading, errorMessage };

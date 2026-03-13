@@ -40,9 +40,13 @@ export async function fetchAdminArticleList(): Promise<Article[]> {
   return data.articles;
 }
 
-export async function fetchArticleBySlug(slug: string): Promise<ArticleDetail> {
+export async function fetchArticleBySlug(
+  slug: string,
+  signal?: AbortSignal,
+): Promise<ArticleDetail> {
   const data = await apiFetch<{ article: ArticleDetail }>(
     `/api/articles/${slug}`,
+    { signal },
   );
   return data.article;
 }

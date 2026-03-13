@@ -2,6 +2,11 @@
 @import "katex/dist/katex.min.css";
 @plugin "@tailwindcss/typography";
 
+/* Offset anchor scroll targets by the fixed navbar height (4rem = 64px) */
+html {
+  scroll-padding-top: 4rem;
+}
+
 .root {
   isolation: isolate;
 }

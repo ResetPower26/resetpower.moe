@@ -43,22 +43,40 @@ function TocItem({ heading, depth }: { heading: TocHeading; depth: number }) {
   );
 }
 
+function TocList({
+  headings,
+  articleKey,
+}: {
+  headings: TocHeading[];
+  articleKey: string;
+}) {
+  if (headings.length === 0) {
+    return <p className="text-sm text-slate-400">本文暂无目录项。</p>;
+  }
+  return (
+    // key resets all TocItem open/close states when the article changes
+    <ul key={articleKey} className="space-y-1 overflow-y-auto flex-1">
+      {headings.map((heading) => (
+        <TocItem key={heading.id} heading={heading} depth={0} />
+      ))}
+    </ul>
+  );
+}
+
 // Desktop sidebar panel: shows heading list only (toggle button is owned by the parent aside).
-export function TableOfContents({ headings }: { headings: TocHeading[] }) {
+export function TableOfContents({
+  headings,
+  articleKey,
+}: {
+  headings: TocHeading[];
+  articleKey: string;
+}) {
   return (
     <nav aria-label="文章目录" className="flex flex-col overflow-hidden flex-1">
       <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
         目录
       </p>
-      {headings.length === 0 ? (
-        <p className="text-sm text-slate-400">本文暂无目录项。</p>
-      ) : (
-        <ul className="space-y-1 overflow-y-auto flex-1">
-          {headings.map((heading) => (
-            <TocItem key={heading.id} heading={heading} depth={0} />
-          ))}
-        </ul>
-      )}
+      <TocList headings={headings} articleKey={articleKey} />
     </nav>
   );
 }
@@ -66,9 +84,11 @@ export function TableOfContents({ headings }: { headings: TocHeading[] }) {
 // Mobile drawer panel: includes a close button at the top.
 export function TableOfContentsMobileDrawer({
   headings,
+  articleKey,
   onClose,
 }: {
   headings: TocHeading[];
+  articleKey: string;
   onClose: () => void;
 }) {
   return (
@@ -86,15 +106,7 @@ export function TableOfContentsMobileDrawer({
       <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
         目录
       </p>
-      {headings.length === 0 ? (
-        <p className="text-sm text-slate-400">本文暂无目录项。</p>
-      ) : (
-        <ul className="space-y-1 overflow-y-auto flex-1">
-          {headings.map((heading) => (
-            <TocItem key={heading.id} heading={heading} depth={0} />
-          ))}
-        </ul>
-      )}
+      <TocList headings={headings} articleKey={articleKey} />
     </nav>
   );
 }

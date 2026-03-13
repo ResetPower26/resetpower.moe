@@ -17,12 +17,25 @@ import { slugify } from "../utils/slugify";
 
 type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
+// Recursively extract plain text from React children (handles strings, arrays, and elements).
+function extractTextFromNode(node: React.ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractTextFromNode).join("");
+  if (node !== null && typeof node === "object" && "props" in node) {
+    return extractTextFromNode(
+      (node as React.ReactElement<{ children?: React.ReactNode }>).props
+        .children,
+    );
+  }
+  return "";
+}
+
 function makeHeadingComponent(Tag: HeadingLevel) {
   return function HeadingWithId({
     children,
     ...props
   }: React.HTMLAttributes<HTMLHeadingElement>) {
-    const text = typeof children === "string" ? children : "";
+    const text = extractTextFromNode(children);
     return (
       <Tag id={slugify(text)} {...props}>
         {children}
@@ -211,7 +224,7 @@ export function ArticleDetail() {
         <div
           className={`flex-1 min-h-0 transition-opacity duration-200 ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         >
-          <TableOfContents headings={headings} />
+          <TableOfContents headings={headings} articleKey={slug} />
         </div>
       </aside>
 
@@ -263,6 +276,7 @@ export function ArticleDetail() {
         >
           <TableOfContentsMobileDrawer
             headings={headings}
+            articleKey={slug}
             onClose={() => setIsMobileDrawerOpen(false)}
           />
         </div>

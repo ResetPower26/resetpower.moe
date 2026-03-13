@@ -14,34 +14,50 @@ function stripAtxClose(text: string): string {
   return text.replace(/\s+#+\s*$/, "").trim();
 }
 
+interface FenceState {
+  char: string;
+  minLength: number;
+}
+
+// Per CommonMark spec: a closing fence must use the same character as the opening fence
+// and must be at least as long, with 0–3 spaces of optional indentation.
+function matchClosingFence(line: string, fence: FenceState): boolean {
+  const stripped = line.replace(/^ {0,3}/, "");
+  if (stripped.length < fence.minLength) return false;
+  return (
+    stripped
+      .split("")
+      .every((c) => c === fence.char || c === " " || c === "\t") &&
+    stripped
+      .trimEnd()
+      .split("")
+      .every((c) => c === fence.char) &&
+    stripped.trimEnd().length >= fence.minLength
+  );
+}
+
 function parseHeadings(markdown: string): TocHeading[] {
   const roots: TocHeading[] = [];
   const stack: { node: TocHeading; level: number }[] = [];
   // Fenced code block tracking: store the opening fence char+length to match the closing fence
-  let fenceMarker: string | null = null;
+  let fence: FenceState | null = null;
 
   for (const line of markdown.split("\n")) {
     // Skip indented code blocks (4 spaces or 1 tab)
     if (/^( {4}|\t)/.test(line)) continue;
 
     // Detect fenced code block open/close (``` or ~~~, 3+ chars, same char to close)
-    const fenceMatch = line.match(/^(`{3,}|~{3,})/);
+    const fenceMatch = line.match(/^( {0,3})(`{3,}|~{3,})/);
     if (fenceMatch) {
-      if (fenceMarker === null) {
-        // Opening fence: record the fence character and minimum length
-        fenceMarker = fenceMatch[1][0];
-      } else if (
-        line
-          .trimEnd()
-          .split("")
-          .every((c) => c === fenceMarker)
-      ) {
-        // Closing fence: must consist solely of the same fence character
-        fenceMarker = null;
+      if (fence === null) {
+        // Opening fence: record the fence character and minimum required closing length
+        fence = { char: fenceMatch[2][0], minLength: fenceMatch[2].length };
+      } else if (matchClosingFence(line, fence)) {
+        fence = null;
       }
       continue;
     }
-    if (fenceMarker !== null) continue;
+    if (fence !== null) continue;
 
     // Match ATX headings: 1–6 # chars followed by a space (CommonMark)
     const headingMatch = line.match(/^(#{1,6}) (.+)/);
